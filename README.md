@@ -10,8 +10,7 @@
 - ✅ **CV Uploads** – Students can upload CVs when applying for jobs.  
 - ✅ **Language Selection** – Supports multiple languages, including **Romanian**.  
 - ✅ **Universities & Employers Section** – Dedicated space for universities and recruiters.  
-- ✅ **Responsive UI** – Ensures a seamless experience across devices.  
-- ✅ **Footer Message** – Displays: _"This website was made by Vercel v0 for the JA Romania Team4 competition."_  
+- ✅ **Responsive UI** – Ensures a seamless experience across devices. 
 
 ## **Technologies Used**  
 
