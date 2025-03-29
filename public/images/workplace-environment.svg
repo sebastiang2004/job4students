@@ -1,0 +1,17 @@
+<svg width="1200" height="600" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9DE0AD" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#45ADA8" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#547980" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" fill="url(#bg-gradient)"/>
+  <text x="600" y="300" font-family="Arial" font-size="24" fill="#594F4F" text-anchor="middle">
+    [AI-generated workplace image would appear here]
+  </text>
+  <text x="600" y="340" font-family="Arial" font-size="18" fill="#594F4F" text-anchor="middle">
+    Modern office with students and professionals collaborating
+  </text>
+</svg>
+
