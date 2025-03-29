@@ -26,11 +26,11 @@
 ```bash
 git clone https://github.com/sebastiang2004/job4students.git
 cd job4students
-
+###
 2. Install Dependencies
 
 npm install
-
+###
 3. Configure Environment Variables
 
 Create a .env.local file in the root directory and add the necessary variables:
@@ -42,21 +42,21 @@ NEXTAUTH_SECRET=your_nextauth_secret
 NEXTAUTH_URL=http://localhost:3000
 GITHUB_ID=your_github_oauth_client_id
 GITHUB_SECRET=your_github_oauth_client_secret
-
+###
 4. Run the Development Server
 
 npm run dev
 
 Then open http://localhost:3000 in your browser.
-
-Deployment
+###
+**Deployment**
 
 To deploy the project on Vercel, run:
 
 vercel
 
 Or push to GitHub, and Vercel will automatically deploy it.
-
+###
 Contributing
 	1.	Fork the repository.
 	2.	Create a new branch:
@@ -66,3 +66,4 @@ git checkout -b feature-new
 
 	3.	Commit your changes and push them.
 	4.	Open a request.
+	###
