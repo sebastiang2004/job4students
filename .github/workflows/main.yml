@@ -38,14 +38,16 @@ jobs:
         run: pnpm add @capacitor/cli  # Install Capacitor CLI locally
 
       - name: Verify Capacitor CLI installation
-        run: pnpx cap --version  # Verify if Capacitor CLI is installed
+        run: |
+          # Ensure @capacitor/cli is installed correctly
+          ls node_modules/.bin/ | grep cap  # Check if 'cap' binary exists
 
       - name: Add iOS platform (if missing)
         run: |
-          pnpx cap add ios || echo "iOS platform already added"  # Add iOS platform using pnpx
+          npx cap add ios || echo "iOS platform already added"  # Use npx to add iOS platform
 
       - name: Sync Capacitor project
-        run: pnpx cap sync ios  # Use pnpx for syncing
+        run: npx cap sync ios  # Use npx for syncing
 
       - name: Install CocoaPods dependencies
         run: |
