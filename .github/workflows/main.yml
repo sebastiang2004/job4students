@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Update to Node.js version 20
+          node-version: '20'  # Ensure Node.js version 20 is used
 
       - name: Install pnpm
         run: |
@@ -34,6 +34,14 @@ jobs:
       - name: Build Next.js App
         run: pnpm build
 
+      - name: Set Capacitor appId and appName
+        run: |
+          echo '{
+            "appId": "com.example.myapp",
+            "appName": "MyApp",
+            "webDir": "www"
+          }' > capacitor.config.json
+
       - name: Install Capacitor CLI locally
         run: pnpm add @capacitor/cli  # Install Capacitor CLI locally
 
@@ -42,12 +50,16 @@ jobs:
           # Ensure @capacitor/cli is installed correctly
           ls node_modules/.bin/ | grep cap  # Check if 'cap' binary exists
 
-      - name: Add iOS platform (if missing)
+      - name: Install iOS platform
         run: |
-          npx cap add ios || echo "iOS platform already added"  # Use npx to add iOS platform
+          npm install @capacitor/ios  # Install the iOS platform package
+
+      - name: Add iOS platform
+        run: |
+          npx cap add ios || echo "iOS platform already added"  # Add iOS platform
 
       - name: Sync Capacitor project
-        run: npx cap sync ios  # Use npx for syncing
+        run: npx cap sync ios  # Synchronize the project
 
       - name: Install CocoaPods dependencies
         run: |
@@ -55,10 +67,14 @@ jobs:
           pod install --repo-update
           cd ..
 
+      - name: Open iOS project in Xcode
+        run: |
+          npx cap open ios  # Open the iOS project in Xcode
+
       - name: Build iOS Archive
         env:
-          scheme: "App"
-          archive_path: ${{ github.workspace }}/ios/build/App.xcarchive
+          scheme: "MyApp"
+          archive_path: ${{ github.workspace }}/ios/build/MyApp.xcarchive
         run: |
           cd ios/App
           xcodebuild clean archive \
@@ -68,7 +84,7 @@ jobs:
 
       - name: Export IPA
         env:
-          export_path: ${{ github.workspace }}/ios/build/App.ipa
+          export_path: ${{ github.workspace }}/ios/build/MyApp.ipa
         run: |
           cd ios/App
           xcodebuild -exportArchive \
@@ -92,13 +108,13 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.export_path }}/App.ipa
-          asset_name: App.ipa
+          asset_path: ${{ env.export_path }}/MyApp.ipa
+          asset_name: MyApp.ipa
           asset_content_type: application/octet-stream
 
       - name: Upload to TestFlight
         run: |
-          fastlane deliver --ipa "${{ env.export_path }}/App.ipa" --app_identifier "com.yourcompany.app"
+          fastlane deliver --ipa "${{ env.export_path }}/MyApp.ipa" --app_identifier "com.example.myapp"
         env:
           FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
           FASTLANE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
