@@ -59,7 +59,7 @@ jobs:
 
       - name: Build iOS Archive
         env:
-          SCHEME: "App"    # Ensure this matches your scheme in Xcode
+          SCHEME: "App"    # Ensure this matches the scheme in your Xcode workspace
           ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
           CODE_SIGNING_ALLOWED: "NO"
         run: |
@@ -69,7 +69,6 @@ jobs:
             -scheme "$SCHEME" \
             -sdk iphoneos \
             -archivePath "$ARCHIVE_PATH" \
-            -derivedDataPath "${{ github.workspace }}/ios/DerivedData" \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Export IPA
@@ -79,10 +78,9 @@ jobs:
         run: |
           cd ios/App
           xcodebuild -exportArchive \
-            -archivePath "${{ env.ARCHIVE_PATH }}" \
+            -archivePath "$ARCHIVE_PATH" \
             -exportOptionsPlist exportOptions.plist \
-            -exportPath "${{ env.EXPORT_PATH }}" \
-            -derivedDataPath "${{ github.workspace }}/ios/DerivedData" \
+            -exportPath "$EXPORT_PATH" \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Create GitHub Release
