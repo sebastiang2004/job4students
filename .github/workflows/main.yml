@@ -28,7 +28,7 @@ jobs:
         run: pnpm --version
 
       - name: Install dependencies
-      - run: pnpm install --no-frozen-lockfile
+        run: pnpm install --no-frozen-lockfile  # Fixed indentation
 
       - name: Build Next.js App
         run: pnpm build
