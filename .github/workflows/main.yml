@@ -22,13 +22,14 @@ jobs:
       - name: Install pnpm
         run: |
           npm install -g pnpm
-          echo "$(pnpm bin -g)" >> $GITHUB_PATH
+          pnpm setup  # Set up the global bin directory for pnpm
+          echo "$(pnpm bin -g)" >> $GITHUB_PATH  # Add pnpm global bin directory to the PATH
 
       - name: Verify pnpm installation
         run: pnpm --version
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile  # Fixed indentation
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build Next.js App
         run: pnpm build
