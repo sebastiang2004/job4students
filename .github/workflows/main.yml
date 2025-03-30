@@ -73,6 +73,7 @@ jobs:
 
       - name: Export IPA
         env:
+          ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
           EXPORT_PATH: ${{ github.workspace }}/ios/build/MyApp.ipa
           CODE_SIGNING_ALLOWED: "NO"
         run: |
