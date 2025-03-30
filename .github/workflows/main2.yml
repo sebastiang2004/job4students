@@ -30,7 +30,8 @@ jobs:
 
       - name: Set Capacitor config
         run: |
-          echo '{
+          cat <<EOF > capacitor.config.json
+          {
             "appId": "com.jobstudents.app",
             "appName": "Job4Students",
             "webDir": "www",
@@ -38,12 +39,13 @@ jobs:
               "url": "https://job4students.vercel.app",
               "cleartext": true
             }
-          }' > capacitor.config.json
+          }
+          EOF
 
       - name: Install Capacitor CLI and Android platform
         run: |
-          pnpm add @capacitor/cli
-          pnpm add @capacitor/android
+          pnpm add --save-dev @capacitor/cli
+          pnpm add --save @capacitor/android
 
       - name: Add and sync Android platform
         run: |
@@ -54,7 +56,6 @@ jobs:
         run: |
           cd android
           ./gradlew assembleRelease
-        working-directory: ./android
 
       - name: Sign APK
         env:
@@ -64,11 +65,10 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           echo "$KEYSTORE_FILE" | base64 --decode > android/app/keystore.jks
-          cd android/app/build/outputs/apk/release
-          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 \
-            -keystore ../../../keystore.jks -storepass "$KEYSTORE_PASSWORD" \
-            -keypass "$KEY_PASSWORD" app-release-unsigned.apk "$KEY_ALIAS"
-          zipalign -v 4 app-release-unsigned.apk app-release.apk
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore android/app/keystore.jks -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" android/app/build/outputs/apk/release/app-release-unsigned.apk "$KEY_ALIAS"
+          zipalign -v 4 android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/app-release.apk
 
       - name: Upload APK to GitHub Release
         id: create_release
@@ -83,16 +83,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload APK to Release
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: android/app/build/outputs/apk/release/app-release.apk
-          asset_name: Job4Students.apk
-          asset_content_type: application/vnd.android.package-archive
+          name: Job4Students.apk
+          path: android/app/build/outputs/apk/release/app-release.apk
 
       - name: Upload to Google Play (Optional)
         run: |
-          fastlane supply --track beta --json_key_data "${{ secrets.GOOGLE_PLAY_JSON_KEY }}" \
+          fastlane supply --track beta --json_key_data '${{ secrets.GOOGLE_PLAY_JSON_KEY }}' \
             --package_name "com.jobstudents.app" --apk "android/app/build/outputs/apk/release/app-release.apk"
         env:
           GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
