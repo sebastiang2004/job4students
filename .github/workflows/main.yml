@@ -38,8 +38,12 @@ jobs:
         run: |
           pnpm add -g @capacitor/cli  # Install Capacitor CLI globally
 
+      - name: Verify Capacitor CLI installation
+        run: pnpx cap --version  # Verify if Capacitor CLI is installed
+
       - name: Add iOS platform (if missing)
-        run: npx cap add ios || echo "iOS platform already added"
+        run: |
+          npx cap add ios || echo "iOS platform already added"  # Add iOS platform
 
       - name: Sync Capacitor project
         run: npx cap sync ios
