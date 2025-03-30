@@ -31,18 +31,19 @@ jobs:
       - name: Set Capacitor config for job4students.ro
         run: |
           echo '{
-            "appId": "3234",
+            "appId": "com.jobstudents.app",
             "appName": "Job4Students",
             "webDir": "www",
             "server": {
-              "url": "www.job4students.vercel.app",
+              "url": "https://job4students.vercel.app",
               "cleartext": true
             }
           }' > capacitor.config.json
 
       - name: Install Capacitor CLI and iOS platform
         run: |
-          pnpm add @capacitor/cli @capacitor/ios
+          pnpm add @capacitor/cli
+          pnpm add @capacitor/ios
 
       - name: Add iOS platform
         run: npx cap add ios || echo "iOS platform already added"
