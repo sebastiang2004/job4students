@@ -34,19 +34,18 @@ jobs:
       - name: Build Next.js App
         run: pnpm build
 
-      - name: Install Capacitor CLI globally
-        run: |
-          pnpm add -g @capacitor/cli  # Install Capacitor CLI globally
+      - name: Install Capacitor CLI locally
+        run: pnpm add @capacitor/cli  # Install Capacitor CLI locally
 
       - name: Verify Capacitor CLI installation
         run: pnpx cap --version  # Verify if Capacitor CLI is installed
 
       - name: Add iOS platform (if missing)
         run: |
-          npx cap add ios || echo "iOS platform already added"  # Add iOS platform
+          pnpx cap add ios || echo "iOS platform already added"  # Add iOS platform using pnpx
 
       - name: Sync Capacitor project
-        run: npx cap sync ios
+        run: pnpx cap sync ios  # Use pnpx for syncing
 
       - name: Install CocoaPods dependencies
         run: |
