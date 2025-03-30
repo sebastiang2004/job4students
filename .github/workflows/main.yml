@@ -5,6 +5,9 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+env:
+  DEVELOPMENT_TEAM: ${{ secrets.TEAM_ID }}
+
 jobs:
   build:
     name: Build and Release iOS App
@@ -86,7 +89,7 @@ jobs:
             -scheme "$SCHEME" \
             -sdk iphoneos \
             -archivePath "$ARCHIVE_PATH" \
-            DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             -allowProvisioningUpdates
 
