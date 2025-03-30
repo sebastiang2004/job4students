@@ -1,0 +1,90 @@
+name: iOS Release
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Release iOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Next.js App
+        run: npm run build
+
+      - name: Install Capacitor CLI
+        run: npm install -g @capacitor/cli
+
+      - name: Add iOS platform (if missing)
+        run: npx cap add ios || echo "iOS platform already added"
+
+      - name: Sync Capacitor project
+        run: npx cap sync ios
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+          cd ..
+
+      - name: Build iOS Archive
+        env:
+          scheme: ${{ 'App' }}
+          archive_path: ${{ github.workspace }}/ios/build/App.xcarchive
+        run: |
+          cd ios/App
+          xcodebuild clean archive \
+            -scheme "$scheme" \
+            -sdk iphoneos \
+            -archivePath "$archive_path"
+
+      - name: Export IPA
+        env:
+          export_path: ${{ github.workspace }}/ios/build/App.ipa
+        run: |
+          cd ios/App
+          xcodebuild -exportArchive \
+            -archivePath "${{ env.archive_path }}" \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath "${{ env.export_path }}"
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: iOS Release v1.0.${{ github.run_number }}
+          body: "Automated iOS release build for version 1.0.${{ github.run_number }}."
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload IPA to Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.export_path }}/App.ipa
+          asset_name: App.ipa
+          asset_content_type: application/octet-stream
+
+      - name: Upload to TestFlight
+        run: |
+          fastlane deliver --ipa "${{ env.export_path }}/App.ipa" --app_identifier "com.yourcompany.app"
+        env:
+          FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
+          FASTLANE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+
