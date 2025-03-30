@@ -28,6 +28,18 @@ jobs:
       - name: Build Next.js App
         run: pnpm build
 
+      - name: Set Capacitor config for job4students.ro
+        run: |
+          echo '{
+            "appId": "3234",
+            "appName": "Job4Students",
+            "webDir": "www",
+            "server": {
+              "url": "www.job4students.vercel.app",
+              "cleartext": true
+            }
+          }' > capacitor.config.json
+
       - name: Install Capacitor CLI and iOS platform
         run: |
           pnpm add @capacitor/cli @capacitor/ios
