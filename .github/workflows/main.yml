@@ -51,24 +51,21 @@ jobs:
       - name: Sync Capacitor project
         run: npx cap sync ios
 
-      - name: Update iOS platform
-        run: npx cap update ios
-
       - name: Install CocoaPods dependencies
         run: |
           cd ios/App
-          pod deintegrate || true
           pod install --repo-update
           cd ../../
 
       - name: Build iOS Archive
         env:
-          SCHEME: "App"    # Adjust if your scheme is different in Xcode
+          SCHEME: "App"    # Ensure this matches your scheme in Xcode
           ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
           CODE_SIGNING_ALLOWED: "NO"
         run: |
           cd ios/App
           xcodebuild clean archive \
+            -workspace "App.xcworkspace" \
             -scheme "$SCHEME" \
             -sdk iphoneos \
             -archivePath "$ARCHIVE_PATH" \
