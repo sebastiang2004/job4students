@@ -22,8 +22,8 @@ jobs:
       - name: Install pnpm
         run: |
           npm install -g pnpm
-          pnpm setup  # This will create the global bin directory for pnpm
-          echo "$(pnpm bin -g)" >> $GITHUB_PATH  # Add pnpm global bin directory to the PATH
+          pnpm config set global-bin-dir $HOME/.pnpm-global/bin  # Set global bin directory
+          echo "$HOME/.pnpm-global/bin" >> $GITHUB_PATH  # Add it to the PATH
 
       - name: Verify pnpm installation
         run: pnpm --version
@@ -36,7 +36,6 @@ jobs:
 
       - name: Install Capacitor CLI globally
         run: |
-          pnpm setup  # Ensure the global bin directory is created
           pnpm add -g @capacitor/cli  # Install Capacitor CLI globally
 
       - name: Add iOS platform (if missing)
