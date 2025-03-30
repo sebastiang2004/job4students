@@ -2,7 +2,7 @@ name: iOS Release
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -17,16 +17,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Ensure Node.js version 20 is used
+          node-version: '20'
 
       - name: Install pnpm
-        run: |
-          npm install -g pnpm
-          pnpm config set global-bin-dir $HOME/.pnpm-global/bin  # Set global bin directory
-          echo "$HOME/.pnpm-global/bin" >> $GITHUB_PATH  # Add it to the PATH
-
-      - name: Verify pnpm installation
-        run: pnpm --version
+        run: npm install -g pnpm
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -34,58 +28,61 @@ jobs:
       - name: Build Next.js App
         run: pnpm build
 
-      - name: Set Capacitor appId and appName
+      - name: Install Capacitor CLI and iOS platform
         run: |
-          echo '{
-            "appId": "com.example.myapp",
-            "appName": "MyApp",
-            "webDir": "www"
-          }' > capacitor.config.json
-
-      - name: Install Capacitor CLI locally
-        run: pnpm add @capacitor/cli  # Install Capacitor CLI locally
-
-      - name: Verify Capacitor CLI installation
-        run: |
-          # Ensure @capacitor/cli is installed correctly
-          ls node_modules/.bin/ | grep cap  # Check if 'cap' binary exists
-
-      - name: Install iOS platform
-        run: pnpm add @capacitor/ios  # Install the iOS platform package
+          pnpm add @capacitor/cli @capacitor/ios
 
       - name: Add iOS platform
-        run: |
-          npx cap add ios || echo "iOS platform already added"  # Add iOS platform
+        run: npx cap add ios || echo "iOS platform already added"
 
       - name: Sync Capacitor project
-        run: npx cap sync ios  # Synchronize the project
+        run: npx cap sync ios
 
       - name: Install CocoaPods dependencies
         run: |
-          cd ios
+          cd ios/App
           pod install --repo-update
-          cd ..
+          cd ../../
+
+      - name: Set up code signing
+        env:
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: |
+          # Import App Store Connect API key
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > AuthKey.p8
+          # Install Fastlane
+          gem install fastlane
+          # Authenticate with App Store Connect
+          fastlane run authenticate_app_store_connect_api_key \
+            key_id:$APP_STORE_CONNECT_KEY_ID \
+            issuer_id:$APP_STORE_CONNECT_ISSUER_ID \
+            key_filepath:AuthKey.p8
+          # Sync provisioning profiles using match
+          fastlane match appstore --readonly
 
       - name: Build iOS Archive
         env:
-          scheme: "MyApp"
-          archive_path: ${{ github.workspace }}/ios/build/MyApp.xcarchive
+          SCHEME: "MyApp"
+          ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
         run: |
           cd ios/App
           xcodebuild clean archive \
-            -scheme "$scheme" \
+            -scheme "$SCHEME" \
             -sdk iphoneos \
-            -archivePath "$archive_path"
+            -archivePath "$ARCHIVE_PATH"
 
       - name: Export IPA
         env:
-          export_path: ${{ github.workspace }}/ios/build/MyApp.ipa
+          EXPORT_PATH: ${{ github.workspace }}/ios/build/MyApp.ipa
         run: |
           cd ios/App
           xcodebuild -exportArchive \
-            -archivePath "${{ env.archive_path }}" \
+            -archivePath "${{ env.ARCHIVE_PATH }}" \
             -exportOptionsPlist exportOptions.plist \
-            -exportPath "${{ env.export_path }}"
+            -exportPath "${{ env.EXPORT_PATH }}"
 
       - name: Create GitHub Release
         id: create_release
@@ -103,13 +100,13 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.export_path }}/MyApp.ipa
+          asset_path: ${{ env.EXPORT_PATH }}/MyApp.ipa
           asset_name: MyApp.ipa
           asset_content_type: application/octet-stream
 
       - name: Upload to TestFlight
         run: |
-          fastlane deliver --ipa "${{ env.export_path }}/MyApp.ipa" --app_identifier "com.example.myapp"
+          fastlane deliver --ipa "${{ env.EXPORT_PATH }}/MyApp.ipa" --app_identifier "com.example.myapp"
         env:
           FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
           FASTLANE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
