@@ -14,20 +14,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js & pnpm
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: "pnpm"
 
-      - name: Install pnpm
-        run: npm install -g pnpm && pnpm --version
-
-      - name: Enable Corepack (pnpm)
+      - name: Enable Corepack
         run: corepack enable
 
+      - name: Install pnpm manually
+        run: npm install -g pnpm
+
       - name: Verify pnpm Installation
-        run: which pnpm && pnpm --version
+        run: |
+          echo "Checking pnpm location:"
+          which pnpm
+          echo "Checking pnpm version:"
+          pnpm --version
+          echo "Checking environment PATH:"
+          echo $PATH
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
