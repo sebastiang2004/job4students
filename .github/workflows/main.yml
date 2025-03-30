@@ -20,9 +20,15 @@ jobs:
           node-version: 18
           cache: "pnpm"
 
-      - name: Install pnpm
-        run: npm install -g pnpm && pnpm setup
-          
+      - name: Install pnpm manually
+        run: |
+          npm install -g pnpm
+          echo "$(pnpm bin -g)" >> $GITHUB_PATH
+          pnpm setup
+
+      - name: Verify pnpm installation
+        run: pnpm --version
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
