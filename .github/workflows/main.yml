@@ -14,27 +14,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js & pnpm
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: "pnpm"
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Install pnpm manually
-        run: npm install -g pnpm
-
-      - name: Verify pnpm Installation
-        run: |
-          echo "Checking pnpm location:"
-          which pnpm
-          echo "Checking pnpm version:"
-          pnpm --version
-          echo "Checking environment PATH:"
-          echo $PATH
-
+      - name: Install pnpm
+        run: npm install -g pnpm && pnpm setup
+          
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -42,7 +30,7 @@ jobs:
         run: pnpm build
 
       - name: Install Capacitor CLI
-        run: npm install -g @capacitor/cli
+        run: pnpm add -g @capacitor/cli
 
       - name: Add iOS platform (if missing)
         run: npx cap add ios || echo "iOS platform already added"
@@ -53,12 +41,12 @@ jobs:
       - name: Install CocoaPods dependencies
         run: |
           cd ios
-          pod install
+          pod install --repo-update
           cd ..
 
       - name: Build iOS Archive
         env:
-          scheme: App
+          scheme: "App"
           archive_path: ${{ github.workspace }}/ios/build/App.xcarchive
         run: |
           cd ios/App
@@ -69,7 +57,7 @@ jobs:
 
       - name: Export IPA
         env:
-          export_path: ${{ github.workspace }}/ios/build
+          export_path: ${{ github.workspace }}/ios/build/App.ipa
         run: |
           cd ios/App
           xcodebuild -exportArchive \
