@@ -1,0 +1,172 @@
+name: iOS & Android Release
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Release iOS & Android Apps
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Next.js App
+        run: pnpm build
+
+      - name: Set Capacitor config
+        run: |
+          echo '{
+            "appId": "com.jobstudents.app",
+            "appName": "Job4Students",
+            "webDir": "www",
+            "server": {
+              "url": "https://job4students.vercel.app",
+              "cleartext": true
+            }
+          }' > capacitor.config.json
+
+      - name: Install Capacitor CLI
+        run: |
+          pnpm add @capacitor/cli
+          pnpm add @capacitor/android
+
+      - name: Add and sync Capacitor platforms
+        run: |
+          npx cap add ios || echo "iOS platform already added"
+          npx cap add android || echo "Android platform already added"
+          npx cap sync
+
+      - name: Install CocoaPods dependencies for iOS
+        run: |
+          cd ios/App
+          pod install --repo-update
+          cd ../../
+
+      - name: Create exportOptions.plist
+        run: |
+          cat <<EOF > ios/App/exportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>${{ secrets.TEAM_ID }}</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>compileBitcode</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+      # ------------------- iOS Build Steps -------------------
+
+      - name: Build iOS Archive
+        env:
+          SCHEME: "App"
+          ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
+        run: |
+          cd ios/App
+          xcodebuild clean archive \
+            -workspace "App.xcworkspace" \
+            -scheme "$SCHEME" \
+            -sdk iphoneos \
+            -archivePath "$ARCHIVE_PATH" \
+            DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            -allowProvisioningUpdates
+
+      - name: Export iOS IPA
+        env:
+          ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
+          EXPORT_PATH: ${{ github.workspace }}/ios/build
+        run: |
+          cd ios/App
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath "$EXPORT_PATH" \
+            -allowProvisioningUpdates
+
+      # ------------------- Android Build Steps -------------------
+
+      - name: Build Android APK
+        run: |
+          cd android
+          ./gradlew assembleRelease
+          cd ..
+
+      - name: Sign Android APK (Optional)
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "${ANDROID_KEYSTORE}" | base64 --decode > android/app/keystore.jks
+          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore android/app/keystore.jks \
+            -storepass "${ANDROID_KEYSTORE_PASSWORD}" -keypass "${ANDROID_KEY_PASSWORD}" \
+            android/app/build/outputs/apk/release/app-release-unsigned.apk "${ANDROID_KEY_ALIAS}"
+          zipalign -v 4 android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            android/app/build/outputs/apk/release/Job4Students.apk
+
+      # ------------------- Upload Releases -------------------
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Release v1.0.${{ github.run_number }}
+          body: "Automated iOS & Android release build for version 1.0.${{ github.run_number }}."
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload iOS IPA to Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.EXPORT_PATH }}/MyApp.ipa
+          asset_name: MyApp.ipa
+          asset_content_type: application/octet-stream
+
+      - name: Upload Android APK to Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: android/app/build/outputs/apk/release/Job4Students.apk
+          asset_name: Job4Students.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      - name: Upload iOS to TestFlight
+        run: |
+          fastlane deliver --ipa "${{ env.EXPORT_PATH }}/MyApp.ipa" --app_identifier "com.jobstudents.app"
+        env:
+          FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
+          FASTLANE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+
+      - name: Upload Android APK to Google Play (Optional)
+        run: |
+          fastlane supply --apk android/app/build/outputs/apk/release/Job4Students.apk --track beta
+        env:
+          GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+
