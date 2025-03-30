@@ -28,30 +28,27 @@ jobs:
       - name: Build Next.js App
         run: pnpm build
 
-      - name: Ensure capacitor.config.json exists
+      - name: Set Capacitor config
         run: |
-          if [ ! -f capacitor.config.json ]; then
-            echo '{
-              "appId": "com.example.myapp",
-              "appName": "MyApp",
-              "webDir": "www"
-            }' > capacitor.config.json
-          fi
-
-      - name: Ensure web assets directory exists
-        run: |
-          mkdir -p www
-          touch www/index.html
+          echo '{
+            "appId": "com.jobstudents.app",
+            "appName": "Job4Students",
+            "webDir": "www",
+            "server": {
+              "url": "https://job4students.vercel.app",
+              "cleartext": true
+            }
+          }' > capacitor.config.json
 
       - name: Install Capacitor CLI and iOS platform
         run: |
-          pnpm add @capacitor/cli @capacitor/ios
+          pnpm add @capacitor/cli
+          pnpm add @capacitor/ios
 
-      - name: Add iOS platform
-        run: npx cap add ios || echo "iOS platform already added"
-
-      - name: Sync Capacitor project
-        run: npx cap sync ios
+      - name: Add and sync iOS platform
+        run: |
+          npx cap add ios || echo "iOS platform already added"
+          npx cap sync ios
 
       - name: Install CocoaPods dependencies
         run: |
@@ -59,41 +56,51 @@ jobs:
           pod install --repo-update
           cd ../../
 
-      - name: Set up code signing
-        env:
-          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      - name: Create exportOptions.plist
         run: |
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > AuthKey.p8
-          gem install fastlane
-          fastlane run authenticate_app_store_connect_api_key \
-            key_id:$APP_STORE_CONNECT_KEY_ID \
-            issuer_id:$APP_STORE_CONNECT_ISSUER_ID \
-            key_filepath:AuthKey.p8
-          fastlane match appstore --readonly
+          cat <<EOF > ios/App/exportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>${{ secrets.TEAM_ID }}</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>compileBitcode</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
 
       - name: Build iOS Archive
         env:
-          SCHEME: "MyApp"
+          SCHEME: "App"
           ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
         run: |
           cd ios/App
           xcodebuild clean archive \
+            -workspace "App.xcworkspace" \
             -scheme "$SCHEME" \
             -sdk iphoneos \
-            -archivePath "$ARCHIVE_PATH"
+            -archivePath "$ARCHIVE_PATH" \
+            DEVELOPMENT_TEAM="${{ secrets.TEAM_ID }}" \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            -allowProvisioningUpdates
 
       - name: Export IPA
         env:
-          EXPORT_PATH: ${{ github.workspace }}/ios/build/MyApp.ipa
+          ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
+          EXPORT_PATH: ${{ github.workspace }}/ios/build
         run: |
           cd ios/App
           xcodebuild -exportArchive \
-            -archivePath "${{ env.ARCHIVE_PATH }}" \
+            -archivePath "$ARCHIVE_PATH" \
             -exportOptionsPlist exportOptions.plist \
-            -exportPath "${{ env.EXPORT_PATH }}"
+            -exportPath "$EXPORT_PATH" \
+            -allowProvisioningUpdates
 
       - name: Create GitHub Release
         id: create_release
@@ -117,7 +124,7 @@ jobs:
 
       - name: Upload to TestFlight
         run: |
-          fastlane deliver --ipa "${{ env.EXPORT_PATH }}/MyApp.ipa" --app_identifier "com.example.myapp"
+          fastlane deliver --ipa "${{ env.EXPORT_PATH }}/MyApp.ipa" --app_identifier "com.jobstudents.app"
         env:
           FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
           FASTLANE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
