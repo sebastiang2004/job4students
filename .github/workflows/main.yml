@@ -59,7 +59,7 @@ jobs:
 
       - name: Build iOS Archive
         env:
-          SCHEME: "MyApp"
+          SCHEME: "App"    # Updated scheme name
           ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
           CODE_SIGNING_ALLOWED: "NO"
         run: |
@@ -101,3 +101,10 @@ jobs:
           asset_path: ${{ env.EXPORT_PATH }}/MyApp.ipa
           asset_name: MyApp.ipa
           asset_content_type: application/octet-stream
+
+      - name: Upload to TestFlight
+        run: |
+          fastlane deliver --ipa "${{ env.EXPORT_PATH }}/MyApp.ipa" --app_identifier "com.example.myapp"
+        env:
+          FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
+          FASTLANE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
