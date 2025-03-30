@@ -57,45 +57,30 @@ jobs:
           pod install --repo-update
           cd ../../
 
-      - name: Set up code signing
-        env:
-          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-        run: |
-          # Import App Store Connect API key
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > AuthKey.p8
-          # Install Fastlane
-          gem install fastlane
-          # Authenticate with App Store Connect
-          fastlane run authenticate_app_store_connect_api_key \
-            key_id:$APP_STORE_CONNECT_KEY_ID \
-            issuer_id:$APP_STORE_CONNECT_ISSUER_ID \
-            key_filepath:AuthKey.p8
-          # Sync provisioning profiles using match
-          fastlane match appstore --readonly
-
       - name: Build iOS Archive
         env:
           SCHEME: "MyApp"
           ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
+          CODE_SIGNING_ALLOWED: "NO"
         run: |
           cd ios/App
           xcodebuild clean archive \
             -scheme "$SCHEME" \
             -sdk iphoneos \
-            -archivePath "$ARCHIVE_PATH"
+            -archivePath "$ARCHIVE_PATH" \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Export IPA
         env:
           EXPORT_PATH: ${{ github.workspace }}/ios/build/MyApp.ipa
+          CODE_SIGNING_ALLOWED: "NO"
         run: |
           cd ios/App
           xcodebuild -exportArchive \
             -archivePath "${{ env.ARCHIVE_PATH }}" \
             -exportOptionsPlist exportOptions.plist \
-            -exportPath "${{ env.EXPORT_PATH }}"
+            -exportPath "${{ env.EXPORT_PATH }}" \
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Create GitHub Release
         id: create_release
@@ -116,10 +101,3 @@ jobs:
           asset_path: ${{ env.EXPORT_PATH }}/MyApp.ipa
           asset_name: MyApp.ipa
           asset_content_type: application/octet-stream
-
-      - name: Upload to TestFlight
-        run: |
-          fastlane deliver --ipa "${{ env.EXPORT_PATH }}/MyApp.ipa" --app_identifier "com.example.myapp"
-        env:
-          FASTLANE_APPLE_ID: ${{ secrets.APPLE_ID }}
-          FASTLANE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
