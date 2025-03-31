@@ -1,13 +1,1 @@
-services:
-  - name: vercel-app
-    type: web
-    env: node
-    buildCommand: "npm install -g vercel && vercel pull --yes --environment=production && vercel build"
-    startCommand: "vercel deploy --prod"
-    repo: https://github.com/your-username/your-vercel-app
-    branch: main
-    envVars:
-      - key: VERCEL_ORG_ID
-        sync: false
-      - key: VERCEL_PROJECT_ID
-        sync: false
+
