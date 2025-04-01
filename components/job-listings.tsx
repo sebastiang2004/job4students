@@ -1,7 +1,19 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapPin, Briefcase, Clock } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
 
 export function JobListings() {
   // Sample job listings
@@ -10,30 +22,38 @@ export function JobListings() {
       id: 1,
       title: "Marketing Intern",
       company: "TechCorp Romania",
-      location: "Bucharest",
+      location: "Suceava",
       type: "Part-time",
       posted: "2 days ago",
       description: "Looking for a marketing intern to help with social media campaigns and content creation.",
+      postedDate: "2 days ago",
+      university: "USV",
     },
     {
       id: 2,
       title: "Web Developer",
       company: "Digital Solutions",
-      location: "Cluj-Napoca",
+      location: "Iasi",
       type: "Freelance",
       posted: "1 week ago",
       description: "Frontend developer needed for a 3-month project working with React and Next.js.",
+      postedDate: "1 week ago",
+      university: "UAIC",
     },
     {
       id: 3,
       title: "Customer Support",
       company: "ServiceNow",
-      location: "Timisoara",
+      location: "Botosani",
       type: "Part-time",
       posted: "3 days ago",
       description: "Customer support role with flexible hours, perfect for students.",
+      postedDate: "3 days ago",
+      university: "Any",
     },
   ]
+
+  const [selectedJob, setSelectedJob] = useState(null)
 
   return (
     <section className="w-full py-12 md:py-24 lg:py-32">
@@ -71,8 +91,8 @@ export function JobListings() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button asChild className="w-full">
-                  <Link href={`/jobs/${job.id}`}>View Details</Link>
+                <Button className="w-full" onClick={() => setSelectedJob(job)}>
+                  View Details
                 </Button>
               </CardFooter>
             </Card>
@@ -84,6 +104,48 @@ export function JobListings() {
           </Button>
         </div>
       </div>
+      {selectedJob && (
+        <Dialog open={!!selectedJob} onOpenChange={(open) => !open && setSelectedJob(null)}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">{selectedJob.title}</DialogTitle>
+              <DialogDescription className="flex items-center text-sm">
+                <span className="font-medium">{selectedJob.company}</span>
+                <span className="mx-2">•</span>
+                <span>{selectedJob.location}</span>
+                <span className="mx-2">•</span>
+                <span>{selectedJob.postedDate}</span>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Job Type</h4>
+                <Badge variant="outline">{selectedJob.type}</Badge>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Description</h4>
+                <p className="text-sm">{selectedJob.description}</p>
+              </div>
+              {selectedJob.university !== "Any" && (
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Target Students</h4>
+                  <Badge variant="secondary" className="text-xs">
+                    For {selectedJob.university} students
+                  </Badge>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="flex gap-2 mt-4">
+              <Button variant="outline" onClick={() => setSelectedJob(null)}>
+                Close
+              </Button>
+              <Button asChild>
+                <Link href={`/jobs/${selectedJob.id}`}>Apply Now</Link>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </section>
   )
 }

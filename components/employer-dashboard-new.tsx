@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,18 @@ import { Progress } from "@/components/ui/progress"
 
 export function EmployerDashboardNew() {
   const [isEditing, setIsEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState("company")
+
+  // Handle tab changes for tabs that don't exist yet
+  const handleTabChange = useCallback((tab) => {
+    // For tabs that exist in the TabsList
+    if (["company", "jobs", "applicants", "documents", "subscription"].includes(tab)) {
+      setActiveTab(tab)
+    } else {
+      // For tabs that don't have corresponding content yet
+      alert(`The ${tab} section is coming soon!`)
+    }
+  }, [])
 
   const industries = [
     "Technology",
@@ -53,27 +65,57 @@ export function EmployerDashboardNew() {
         </Card>
 
         <div className="space-y-2 w-full">
-          <Button variant="secondary" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeTab === "company" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveTab("company")}
+          >
             <Building className="mr-2 h-4 w-4" />
             Company Profile
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeTab === "jobs" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveTab("jobs")}
+          >
             <Briefcase className="mr-2 h-4 w-4" />
             Job Postings
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeTab === "applicants" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveTab("applicants")}
+          >
             <Users className="mr-2 h-4 w-4" />
             Applicants
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeTab === "analytics" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => handleTabChange("analytics")}
+          >
             <BarChart className="mr-2 h-4 w-4" />
             Analytics
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeTab === "settings" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => handleTabChange("settings")}
+          >
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeTab === "documents" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveTab("documents")}
+          >
             <FileText className="mr-2 h-4 w-4" />
             Documents
           </Button>
@@ -82,7 +124,7 @@ export function EmployerDashboardNew() {
 
       {/* Main Content */}
       <div className="flex-1">
-        <Tabs defaultValue="company" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="company">Company</TabsTrigger>
             <TabsTrigger value="jobs">Jobs</TabsTrigger>

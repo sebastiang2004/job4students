@@ -1,6 +1,5 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { LanguageSwitcher } from "@/components/language-switcher"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,9 +9,6 @@ import { Mail, MapPin, Phone } from "lucide-react"
 export default function ContactPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="fixed top-4 right-4 z-50">
-        <LanguageSwitcher />
-      </div>
       <Header />
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32">
@@ -73,7 +69,7 @@ export default function ContactPage() {
                       <Phone className="h-5 w-5 mt-0.5 text-primary" />
                       <div>
                         <h3 className="font-medium">Phone</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">+40 123 456 789</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">+40 230 456 789</p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-4">
@@ -81,9 +77,9 @@ export default function ContactPage() {
                       <div>
                         <h3 className="font-medium">Address</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Bucharest, Romania
+                          Suceava, Romania
                           <br />
-                          Street Address, 123
+                          Strada Universității 13, 720229
                         </p>
                       </div>
                     </div>

@@ -10,6 +10,8 @@ const languages = [
   { code: "fr", name: "Français" },
   { code: "de", name: "Deutsch" },
   { code: "ro", name: "Română" },
+  { code: "es", name: "Español" },
+  { code: "it", name: "Italiano" },
 ]
 
 export function LanguageSwitcher() {
@@ -23,9 +25,9 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="rounded-full">
+        <Button variant="ghost" size="sm" className="flex items-center gap-1.5 h-8 px-2">
           <Globe className="h-4 w-4" />
-          <span className="sr-only">Switch language</span>
+          <span className="text-sm font-medium">{currentLanguage.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

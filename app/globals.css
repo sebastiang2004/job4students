@@ -5,64 +5,64 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 20%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 20%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 20%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 178 42% 47%;
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 146 58% 78%;
-    --secondary-foreground: 0 0% 20%;
+    --secondary: 172 70% 40%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 178 20% 90%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 146 58% 78%;
-    --accent-foreground: 0 0% 20%;
+    --accent: 35 92% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 350 89% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 178 20% 85%;
-    --input: 178 20% 85%;
-    --ring: 178 42% 47%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 239 84% 67%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 0 0% 15%;
-    --foreground: 0 0% 95%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 20%;
-    --card-foreground: 0 0% 95%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 20%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 178 42% 47%;
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 146 40% 40%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 172 70% 40%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 25%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 146 40% 40%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 35 92% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 95%;
+    --destructive: 350 89% 60%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 0 0% 30%;
-    --input: 0 0% 30%;
-    --ring: 178 42% 47%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 239 84% 67%;
   }
 }
 
@@ -76,7 +76,7 @@
 }
 
 .theme-gradient-text {
-  background: linear-gradient(to right, #9de0ad, #45ada8, #547980);
+  background: linear-gradient(to right, #6366f1, #3b82f6, #14b8a6);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

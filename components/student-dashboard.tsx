@@ -14,6 +14,7 @@ import { Briefcase, Bell, Settings, User, FileText, BookmarkIcon } from "lucide-
 
 export function StudentDashboard() {
   const [isEditing, setIsEditing] = useState(false)
+  const [activeSection, setActiveSection] = useState("profile")
 
   const universities = [
     "University of Bucharest",
@@ -52,27 +53,57 @@ export function StudentDashboard() {
         </Card>
 
         <div className="space-y-2 w-full">
-          <Button variant="secondary" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeSection === "profile" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveSection("profile")}
+          >
             <User className="mr-2 h-4 w-4" />
             Profile
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeSection === "applications" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveSection("applications")}
+          >
             <Briefcase className="mr-2 h-4 w-4" />
             Applications
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeSection === "saved" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveSection("saved")}
+          >
             <BookmarkIcon className="mr-2 h-4 w-4" />
             Saved Jobs
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeSection === "cv" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveSection("cv")}
+          >
             <FileText className="mr-2 h-4 w-4" />
             CV Manager
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeSection === "notifications" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveSection("notifications")}
+          >
             <Bell className="mr-2 h-4 w-4" />
             Notifications
           </Button>
-          <Button variant="ghost" className="w-full justify-center" size="sm">
+          <Button
+            variant={activeSection === "settings" ? "secondary" : "ghost"}
+            className="w-full justify-center"
+            size="sm"
+            onClick={() => setActiveSection("settings")}
+          >
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Button>
@@ -81,7 +112,7 @@ export function StudentDashboard() {
 
       {/* Main Content */}
       <div className="flex-1">
-        <Tabs defaultValue="profile" className="w-full">
+        <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="education">Education</TabsTrigger>

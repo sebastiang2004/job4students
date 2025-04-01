@@ -55,10 +55,12 @@ const config = {
         },
         // Custom color palette
         theme: {
-          mint: "#9DE0AD",
-          teal: "#45ADA8",
-          ocean: "#547980",
-          charcoal: "#594F4F",
+          purple: "#6366F1", // Professional but modern indigo
+          blue: "#3B82F6", // Trustworthy blue
+          teal: "#14B8A6", // Fresh teal
+          amber: "#F59E0B", // Energetic amber
+          rose: "#F43F5E", // Vibrant rose
+          dark: "#1E293B", // Dark slate for text
         },
       },
       borderRadius: {
