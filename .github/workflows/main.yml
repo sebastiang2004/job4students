@@ -1,0 +1,100 @@
+name: iOS Release
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Release iOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Next.js App
+        run: pnpm build
+
+      - name: Set Capacitor config for job4students.ro
+        run: |
+          echo '{
+            "appId": "com.jobstudents.app",
+            "appName": "Job4Students",
+            "webDir": "out",
+            "server": {
+              "cleartext": true
+            }
+          }' > capacitor.config.json
+      - name: Install Capacitor CLI and iOS platform
+        run: |
+          pnpm add @capacitor/cli
+          pnpm add @capacitor/ios
+      - name: Add iOS platform
+        run: npx cap add ios || echo "iOS platform already added"
+
+      - name: Sync Capacitor project
+        run: npx cap sync ios
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios/App
+          pod install --repo-update
+          cd ../../
+      - name: Build iOS Archive
+        env:
+          SCHEME: "App"    # Ensure this matches the scheme in your Xcode workspace
+          ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
+          CODE_SIGNING_ALLOWED: "NO"
+        run: |
+          cd ios/App
+          xcodebuild clean archive \
+            -workspace "App.xcworkspace" \
+            -scheme "$SCHEME" \
+            -sdk iphoneos \
+            -archivePath "$ARCHIVE_PATH" \
+            CODE_SIGNING_ALLOWED=NO
+      - name: Export IPA
+        env:
+          ARCHIVE_PATH: ${{ github.workspace }}/ios/build/MyApp.xcarchive
+          EXPORT_PATH: ${{ github.workspace }}/ios/build/MyApp.ipa
+          CODE_SIGNING_ALLOWED: "NO"
+        run: |
+          cd ios/App
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath "$EXPORT_PATH" \
+            CODE_SIGNING_ALLOWED=NO
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: App release v1.0.${{ github.run_number }}
+          body: "Automated iOS release build for version 1.0.${{ github.run_number }}."
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload IPA to Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.EXPORT_PATH }}/MyApp.ipa
+          asset_name: MyApp.ipa
+          asset_content_type: application/octet-stream
+
