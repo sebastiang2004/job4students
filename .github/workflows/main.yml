@@ -77,6 +77,7 @@ jobs:
             -archivePath "$ARCHIVE_PATH" \
             -exportOptionsPlist exportOptions.plist \
             -exportPath "$EXPORT_PATH" \
+            -allowProvisioningUpdates
             CODE_SIGNING_ALLOWED=NO
       - name: Create GitHub Release
         id: create_release
